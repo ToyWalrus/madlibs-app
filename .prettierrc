@@ -1,0 +1,17 @@
+{
+	"singleQuote": true,
+	"tabWidth": 4,
+	"useTabs": true,
+	"arrowParens": "avoid",
+	"printWidth": 120,
+	"plugins": ["@trivago/prettier-plugin-sort-imports"],
+	"importOrder": [
+		"^react",
+		"^@react-spectrum",
+		"<BUILTIN_MODULES>",
+		"<THIRD_PARTY_MODULES>",
+		"^[./](?!(.*\\.(css|scss)$))",
+		".*\\.(css|scss)$"
+	],
+	"importOrderSeparation": true
+}
