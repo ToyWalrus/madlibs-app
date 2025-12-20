@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
 	ActionButton,
@@ -8,6 +8,7 @@ import {
 	Content,
 	Heading,
 	IllustratedMessage,
+	ProgressCircle,
 	Tag,
 	TagGroup,
 	Text,
@@ -24,29 +25,35 @@ import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 import { PageLayout } from '@/components/PageLayout';
 import { ShareCodeEntryDialog } from '@/components/ShareCodeDialog';
 import { fetchWordbank, updateWordbank } from '@/database';
-import type { WordBank } from '@/types';
-import { capitalize, dedupWordBank, stripWordBankWords } from '@/utils/helperFunctions';
+import type { WordBank as WordBankType } from '@/types';
+import { EMPTY_WORD_BANK, flex1 } from '@/utils/constants';
+import { capitalize, dedupWordBank, exceptSets, stripWordBankWords } from '@/utils/helperFunctions';
+import clsx from 'clsx';
 
 interface WordBankProps {
 	shareId?: string;
 }
 
 export function WordBank({ shareId }: WordBankProps) {
-	// TODO: keep track of which words are local and which are from the db
-	// TODO: make submitted db words non-removable
-	const [wordBank, setWordBank] = useState<WordBank>({ categories: [], words: {} });
+	const [isLoading, setIsLoading] = useState(false);
+	const [localWordBank, setLocalWordBank] = useState(EMPTY_WORD_BANK);
 	const [showExistingWords, setShowExistingWords] = useState(false);
+	const dbWordBank = useRef(EMPTY_WORD_BANK);
 
 	useEffect(() => {
 		if (!shareId) return;
-		fetchWordbank(shareId).then(bank => {
-			setWordBank(prev => (showExistingWords ? dedupWordBank(bank, prev) : stripWordBankWords(bank)));
-		});
-	}, [shareId, showExistingWords]);
+		setIsLoading(true);
+		fetchWordbank(shareId)
+			.then(bank => {
+				dbWordBank.current = bank;
+				setLocalWordBank(stripWordBankWords(bank));
+			})
+			.finally(() => setIsLoading(false));
+	}, [shareId]);
 
 	const getOnAddWord = useCallback(
 		(category: string) => (newWord: string) => {
-			setWordBank(bank => ({
+			setLocalWordBank(bank => ({
 				...bank,
 				words: {
 					...bank.words,
@@ -59,7 +66,7 @@ export function WordBank({ shareId }: WordBankProps) {
 
 	const getOnRemoveWord = useCallback(
 		(category: string) => (wordToRemove: string) => {
-			setWordBank(bank => ({
+			setLocalWordBank(bank => ({
 				...bank,
 				words: {
 					...bank.words,
@@ -73,7 +80,9 @@ export function WordBank({ shareId }: WordBankProps) {
 	const onSubmitWords = useCallback(async () => {
 		if (!shareId) return;
 		try {
-			await updateWordbank(shareId, wordBank);
+			await updateWordbank(shareId, localWordBank);
+			setLocalWordBank(stripWordBankWords(localWordBank));
+			dbWordBank.current = dedupWordBank(dbWordBank.current, localWordBank);
 		} catch (e) {
 			console.error(e);
 			UNSTABLE_ToastQueue.negative('Unable to submit words', {
@@ -84,7 +93,7 @@ export function WordBank({ shareId }: WordBankProps) {
 			return;
 		}
 		UNSTABLE_ToastQueue.positive('Words submitted!', { timeout: 5000 });
-	}, [shareId, wordBank]);
+	}, [shareId, localWordBank]);
 
 	if (!shareId) {
 		return (
@@ -123,35 +132,63 @@ export function WordBank({ shareId }: WordBankProps) {
 				<Heading level={1} styles={style({ alignSelf: 'start', fontWeight: 'normal', color: 'heading' })}>
 					Word bank
 				</Heading>
-				<Button variant="accent" isDisabled={!hasWords(wordBank)} onPress={onSubmitWords}>
+				<Button variant="accent" isDisabled={!hasWords(localWordBank)} onPress={onSubmitWords}>
 					Submit
 				</Button>
 			</div>
-			<ToggleButton size="L" isSelected={showExistingWords} onChange={setShowExistingWords}>
-				Show submitted words
-			</ToggleButton>
+			<div className={style({ minHeight: 'fit' })}>
+				<ToggleButton size="L" isSelected={showExistingWords} onChange={setShowExistingWords}>
+					Show submitted words
+				</ToggleButton>
+			</div>
 			<div
-				className={style({
-					display: 'flex',
-					flexDirection: 'column',
-					paddingBottom: 12,
-					gap: 12,
-					width: {
-						default: 'full',
-						md: 500,
-						lg: 600,
-					},
-				})}
+				className={clsx(
+					style({
+						display: 'flex',
+						flexDirection: 'column',
+						paddingBottom: 12,
+						gap: 12,
+						width: {
+							default: 'full',
+							md: 500,
+							lg: 600,
+						},
+					}),
+					flex1,
+				)}
 			>
-				{wordBank.categories.map(category => (
-					<CategorySection
-						key={category}
-						category={category}
-						words={wordBank.words[category]}
-						onAddWord={getOnAddWord(category)}
-						onRemoveWord={getOnRemoveWord(category)}
-					/>
-				))}
+				{isLoading ? (
+					<div
+						className={clsx(
+							style({
+								display: 'flex',
+								alignSelf: 'center',
+								justifySelf: 'center',
+							}),
+							flex1,
+						)}
+					>
+						<ProgressCircle
+							size="L"
+							styles={style({ alignSelf: 'center' })}
+							aria-label="Loading words..."
+							isIndeterminate
+						/>
+					</div>
+				) : (
+					localWordBank.categories.map(category => (
+						<CategorySection
+							key={category}
+							category={category}
+							existingWords={
+								showExistingWords ? onlyDBWords(dbWordBank.current, localWordBank, category) : []
+							}
+							words={localWordBank.words[category]}
+							onAddWord={getOnAddWord(category)}
+							onRemoveWord={getOnRemoveWord(category)}
+						/>
+					))
+				)}
 			</div>
 		</PageLayout>
 	);
@@ -162,11 +199,12 @@ interface CategorySectionProps {
 	category: string;
 	onAddWord: (word: string) => void;
 	onRemoveWord: (word: string) => void;
+	existingWords: string[];
 }
 
-function CategorySection({ words, category, onAddWord, onRemoveWord }: CategorySectionProps) {
+function CategorySection({ words, existingWords = [], category, onAddWord, onRemoveWord }: CategorySectionProps) {
 	const [newWord, setNewWord] = useState('');
-	const wordItems = useMemo(() => words.map(w => ({ label: w, id: w })), [words]);
+	const createWordItems = useCallback((words: string[]) => words.map(w => ({ label: w, id: w })), []);
 
 	return (
 		<Card styles={style({ width: 'auto' })}>
@@ -192,10 +230,13 @@ function CategorySection({ words, category, onAddWord, onRemoveWord }: CategoryS
 				</div>
 				<TagGroup
 					size="S"
-					items={wordItems}
+					items={createWordItems(words)}
 					onRemove={keys => onRemoveWord([...keys][0] as string)}
 					renderEmptyState={() => <span className={style({ marginStart: 2 })}>No words added yet...</span>}
 				>
+					{item => <Tag>{item.label}</Tag>}
+				</TagGroup>
+				<TagGroup size="S" items={createWordItems(existingWords)} renderEmptyState={() => <></>}>
 					{item => <Tag>{item.label}</Tag>}
 				</TagGroup>
 			</Content>
@@ -203,6 +244,13 @@ function CategorySection({ words, category, onAddWord, onRemoveWord }: CategoryS
 	);
 }
 
-function hasWords(wordBank: WordBank) {
+function hasWords(wordBank: WordBankType) {
 	return Object.keys(wordBank.words).some(key => wordBank.words[key].length > 0);
+}
+
+function onlyDBWords(dbWordBank: WordBankType, localWordBank: WordBankType, category: string): string[] {
+	const dbWords = new Set(dbWordBank.words[category]);
+	const localWords = new Set(localWordBank.words[category]);
+
+	return Array.from(exceptSets(dbWords, localWords));
 }

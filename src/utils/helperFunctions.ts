@@ -33,6 +33,10 @@ export function parseCamelCase(str: string) {
 	return parts.filter(Boolean);
 }
 
+/**
+ * Keeps the WordBank.categories and each of the arrays in WordBank.words, but empties the arrays.
+ * @returns A new object with empty arrays in WordBank.words.
+ */
 export function stripWordBankWords(wordBank: WordBank): WordBank {
 	const newBank = structuredClone(wordBank);
 	for (const key of Object.keys(newBank.words)) {
@@ -41,6 +45,10 @@ export function stripWordBankWords(wordBank: WordBank): WordBank {
 	return newBank;
 }
 
+/**
+ * Merges the second word bank into the first, and ensures there are no duplicates in WordBank.words.
+ * @returns A new object with unique strings for each of the WordBank.words arrays.
+ */
 export function dedupWordBank(existing: WordBank, newWordBank: WordBank) {
 	return {
 		...existing,
@@ -52,4 +60,98 @@ export function dedupWordBank(existing: WordBank, newWordBank: WordBank) {
 			{} as WordBank['words'],
 		),
 	};
+}
+
+/**
+ * Computes the difference between two sets, returning a new set containing elements
+ * that are in the first set but not in the second set. An optional comparator function
+ * can be provided to customize the comparison logic.
+ * @returns A new set containing elements from the first set that are not in the second set.
+ *
+ * @example
+ * ```typescript
+ * const setA = new Set([1, 2, 3]);
+ * const setB = new Set([2, 3, 4]);
+ *
+ * // Without comparator
+ * const result1 = exceptSets(setA, setB);
+ * console.log(result1); // Output: Set { 1 }
+ *
+ * // With comparator
+ * const setC = new Set([{ id: 1 }, { id: 2 }]);
+ * const setD = new Set([{ id: 2 }]);
+ * const result2 = exceptSets(setC, setD, (a, b) => a.id === b.id);
+ * console.log(result2); // Output: Set { { id: 1 } }
+ * ```
+ */
+export function exceptSets<T>(a: Set<T>, b: Set<T>, comparator?: (a: T, B: T) => boolean) {
+	const result = new Set<T>();
+
+	if (comparator) {
+		for (const itemA of a) {
+			let found = false;
+			for (const itemB of b) {
+				if (comparator(itemA, itemB)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				result.add(itemA);
+			}
+		}
+	} else {
+		for (const item of a) {
+			if (!b.has(item)) {
+				result.add(item);
+			}
+		}
+	}
+
+	return result;
+}
+
+/**
+ * Computes the intersection of two sets, returning a new set containing elements
+ * that are present in both sets. An optional comparator function can be provided
+ * to customize the comparison logic.
+ * @returns A new set containing elements that are present in both sets.
+ *
+ * @example
+ * ```typescript
+ * const setA = new Set([1, 2, 3]);
+ * const setB = new Set([2, 3, 4]);
+ *
+ * // Without comparator
+ * const result1 = intersectSets(setA, setB);
+ * console.log(result1); // Output: Set { 2, 3 }
+ *
+ * // With comparator
+ * const setC = new Set([{ id: 1 }, { id: 2 }]);
+ * const setD = new Set([{ id: 2 }]);
+ * const result2 = intersectSets(setC, setD, (a, b) => a.id === b.id);
+ * console.log(result2); // Output: Set { { id: 2 } }
+ * ```
+ */
+export function intersectSets<T>(a: Set<T>, b: Set<T>, comparator?: (a: T, b: T) => boolean): Set<T> {
+	const result = new Set<T>();
+
+	if (comparator) {
+		for (const itemA of a) {
+			for (const itemB of b) {
+				if (comparator(itemA, itemB)) {
+					result.add(itemA);
+					break;
+				}
+			}
+		}
+	} else {
+		for (const item of a) {
+			if (b.has(item)) {
+				result.add(item);
+			}
+		}
+	}
+
+	return result;
 }
