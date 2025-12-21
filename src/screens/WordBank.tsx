@@ -6,7 +6,6 @@ import {
 	ButtonGroup,
 	Card,
 	Content,
-	Heading,
 	IllustratedMessage,
 	ProgressCircle,
 	Tag,

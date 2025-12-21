@@ -1,12 +1,11 @@
 import type { Template, WordBank } from '@/types';
 import { dedupWordBank, extractCategories } from '@/utils/helperFunctions';
 import { getDoc, setDoc, doc, deleteDoc } from 'firebase/firestore';
-import { customAlphabet } from 'nanoid';
 
 import { db } from './firebase';
 
+const TEMPLATES_KEY = 'templates';
 const WORDBANK_COLLECTION = 'wordbank';
-const generateId = customAlphabet('0123456789ABCDFGHJKLMNPQRSTUVWXYZ');
 
 async function timeout<T>(promise: Promise<T>, timeoutVal = 30000): Promise<T> {
 	return Promise.race([
@@ -57,4 +56,27 @@ export async function fetchWordbank(shareId: string): Promise<WordBank> {
 
 export async function deleteWordbank(shareId: string) {
 	return timeout(deleteDoc(doc(db, WORDBANK_COLLECTION, shareId)));
+}
+
+export function saveTemplate(template: Template) {
+	const templateList = getAllSavedTemplates();
+	const existing = templateList.find(t => t.shareId === template.shareId);
+	if (existing) {
+		existing.text = template.text;
+		existing.title = template.title;
+	} else {
+		templateList.push(template);
+	}
+	localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templateList));
+}
+
+export function deleteSavedTemplate(shareId: string) {
+	let templateList = getAllSavedTemplates();
+	templateList = templateList.filter(template => template.shareId !== shareId);
+	localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templateList));
+}
+
+export function getAllSavedTemplates(): Template[] {
+	const val = localStorage.getItem(TEMPLATES_KEY);
+	return val ? JSON.parse(val) : [];
 }

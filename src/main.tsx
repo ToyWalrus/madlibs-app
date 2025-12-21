@@ -11,6 +11,8 @@ import { WordBank } from '@/screens/WordBank.tsx';
 import store, { useDispatch, useSelector } from '@/store';
 import { selectCurrentTab, setCurrentTab, type AppTab } from '@/store/appSlice.ts';
 
+import { TemplateCreation } from './screens/TemplateCreation';
+
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<ReduxProvider store={store}>
@@ -25,7 +27,8 @@ function App() {
 
 	return (
 		<S2Provider background="layer-1" styles={style({ height: 'full', overflow: 'hidden' })}>
-			<TemplateList />
+			{/* <TemplateList /> */}
+			<TemplateCreation />
 			{/* <WordBank shareId={'0'} /> */}
 			<UNSTABLE_ToastContainer placement="bottom" />
 			{/* <Tabs

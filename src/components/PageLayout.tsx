@@ -21,7 +21,7 @@ export function PageLayout({ children, title, headerActions, className, isEmptyP
 				style({
 					display: 'flex',
 					flexDirection: 'column',
-					height: 'full',
+					height: 'calc(100% - 16px)',
 					paddingX: 16,
 					paddingY: 8,
 					overflowY: 'auto',

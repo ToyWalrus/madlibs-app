@@ -1,4 +1,5 @@
 import type { WordBank } from '@/types';
+import { customAlphabet } from 'nanoid';
 
 /**
  * Capitalizes a string.
@@ -26,6 +27,14 @@ export function extractCategories(text: string): string[] {
 	}
 
 	return Array.from(categories);
+}
+
+/**
+ * Returns a randomly generated 5-character string of alpha-numeric characters.
+ */
+const generateId = customAlphabet('0123456789ABCDFGHJKLMNPQRSTUVWXYZ');
+export function generateShareId() {
+	return generateId(5);
 }
 
 /**

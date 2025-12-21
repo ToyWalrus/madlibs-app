@@ -26,44 +26,39 @@ import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import { PageLayout } from '@/components/PageLayout';
 import { ShareCodeEntryDialog } from '@/components/ShareCodeDialog';
-import { deleteWordbank, ensureWordbankExists } from '@/database';
-import { useSelector } from '@/store';
-import { selectTemplates } from '@/store/templatesSlice';
+import { deleteSavedTemplate, deleteWordbank, ensureWordbankExists, getAllSavedTemplates } from '@/database';
 import type { Template } from '@/types';
 import { capitalize, extractCategories } from '@/utils/helperFunctions';
 
 export function TemplateList() {
-	const templates = useSelector(selectTemplates);
+	const [templateList, setTemplatesList] = useState(getAllSavedTemplates());
 
 	let component: JSX.Element;
-	if (!templates.length) {
+	if (!templateList.length) {
 		component = (
-			<IllustratedMessage
-				UNSAFE_style={{
-					borderWidth: 1,
-					borderColor: '#beccea',
-					borderStyle: 'solid',
-					borderRadius: 8,
-					paddingBottom: 8,
-				}}
-			>
+			<IllustratedMessage>
 				<EmptyIllustration />
 				<Heading>No templates yet</Heading>
 				<Content>Get started by creating one!</Content>
-				<ButtonGroup>
-					<Button variant="premium">Create</Button>
-				</ButtonGroup>
 			</IllustratedMessage>
 		);
 	} else {
 		component = (
 			<>
-				{templates.map(t => (
+				{templateList.map(t => (
 					<TemplateItem
 						key={t.shareId}
 						template={t}
 						onShare={() => ensureWordbankExists(t)}
-						onDelete={() => deleteWordbank(t.shareId)}
+						onDelete={async () => {
+							try {
+								await deleteWordbank(t.shareId);
+								deleteSavedTemplate(t.shareId);
+								setTemplatesList(prev => prev.filter(template => template.shareId !== t.shareId));
+							} catch {
+								UNSTABLE_ToastQueue.negative('Something went wrong');
+							}
+						}}
 					/>
 				))}
 			</>
@@ -72,14 +67,24 @@ export function TemplateList() {
 
 	return (
 		<PageLayout
-			isEmptyPage={!templates.length}
+			isEmptyPage={!templateList.length}
 			className={style({ gap: 24 })}
-			title="My templates"
+			title="My stories"
 			headerActions={
-				<ShareCodeEntryDialog
-					buttonText="Enter share code"
-					onSubmit={() => new Promise(r => setTimeout(() => r(true), 400))}
-				/>
+				<div
+					className={style({
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'end',
+						gap: 8,
+					})}
+				>
+					<Button variant="accent">Create</Button>
+					<ShareCodeEntryDialog
+						buttonText="Enter share code"
+						onSubmit={() => new Promise(r => setTimeout(() => r(true), 400))}
+					/>
+				</div>
 			}
 		>
 			<div
@@ -88,6 +93,7 @@ export function TemplateList() {
 					flexDirection: 'column',
 					gap: 12,
 					width: {
+						// auto?
 						default: 'full',
 						md: 500,
 						lg: 600,
