@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Provider as ReduxProvider } from 'react-redux';
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 
 import { Provider as S2Provider, UNSTABLE_ToastContainer } from '@react-spectrum/s2';
@@ -12,15 +11,12 @@ import { GenerationPage } from '@/screens/GenerationPage';
 import { TemplateCreation } from '@/screens/TemplateCreation';
 import { TemplateList } from '@/screens/TemplateList';
 import { WordBank } from '@/screens/WordBank';
-import store from '@/store';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<ReduxProvider store={store}>
-			<BrowserRouter>
-				<App />
-			</BrowserRouter>
-		</ReduxProvider>
+		<BrowserRouter>
+			<App />
+		</BrowserRouter>
 	</StrictMode>,
 );
 
