@@ -32,10 +32,12 @@ import {
 	deleteSavedTemplate,
 	deleteWordbank,
 	ensureWordbankExists,
+	fetchWordbank,
 	getAllSavedTemplates,
 	shareIdExists,
 } from '@/database';
 import type { Template } from '@/types';
+import { generateStory, getReplacementRanges } from '@/utils/generateStory';
 import { capitalize, extractCategories } from '@/utils/helperFunctions';
 
 export function TemplateList() {
@@ -76,6 +78,11 @@ export function TemplateList() {
 							} catch {
 								UNSTABLE_ToastQueue.negative('Something went wrong');
 							}
+						}}
+						onGenerate={async () => {
+							const wordbank = await fetchWordbank(t.shareId);
+							const story = generateStory(t.text, wordbank, getReplacementRanges(t.text, wordbank));
+							console.log(story);
 						}}
 					/>
 				))}

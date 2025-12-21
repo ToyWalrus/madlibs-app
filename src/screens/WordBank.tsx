@@ -204,7 +204,8 @@ function CategorySection({ words, existingWords = [], category, onAddWord, onRem
 					{capitalize(category)}
 				</Text>
 				<div className={style({ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'end' })}>
-					<TextField placeholder={`New ${category}`} value={newWord} onChange={setNewWord} />
+					<TextField placeholder={`New ${category}`} value={newWord} onChange={setNewWord} />{' '}
+					{/* TODO: enter submits the word */}
 					<TooltipTrigger delay={700}>
 						<ActionButton
 							onPress={() => {

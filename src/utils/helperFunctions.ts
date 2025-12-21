@@ -1,6 +1,8 @@
 import type { WordBank } from '@/types';
 import { customAlphabet } from 'nanoid';
 
+import { categoryRegex } from './constants';
+
 /**
  * Capitalizes a string.
  *
@@ -19,7 +21,6 @@ export function capitalize(str?: string) {
 export function extractCategories(text: string): string[] {
 	const categories: Set<string> = new Set();
 
-	const categoryRegex = /\[([A-z\d ]+?)(:\d)?\]/gm;
 	const matches = text.matchAll(categoryRegex);
 	for (const match of matches) {
 		const text = parseCamelCase(match[1]).join(' ');
@@ -35,6 +36,33 @@ export function extractCategories(text: string): string[] {
 const generateId = customAlphabet('0123456789ABCDFGHJKLMNPQRSTUVWXYZ');
 export function generateShareId() {
 	return generateId(5);
+}
+
+/**
+ * Selects a random item from the array and returns it. If there are no
+ * valid selections in the array after the ignore array has been used as a filter,
+ * the full array will be used again.
+ */
+export function pickRandom<T>(arr: T[], ignore?: T[], comparator?: (a: T, b: T) => boolean) {
+	if (!arr.length) {
+		throw new Error('Array cannot be empty');
+	}
+
+	const filterFn = (item: T) => {
+		if (comparator) {
+			return !ignore?.some(toIgnore => comparator(item, toIgnore));
+		}
+		return !ignore?.includes(item);
+	};
+
+	let filteredArr = ignore ? arr.filter(filterFn) : arr;
+	if (!filteredArr.length) {
+		console.error('No items to pick from remaining array; using full array instead');
+		filteredArr = arr;
+	}
+
+	const randomIndex = Math.floor(Math.random() * filteredArr.length);
+	return filteredArr[randomIndex];
 }
 
 /**
