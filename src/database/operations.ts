@@ -1,67 +1,12 @@
 import type { Template, WordBank } from '@/types';
-import { extractCategories } from '@/utils/extractCategories';
-import { dedupWordBank } from '@/utils/helperFunctions';
-import {
-	addDoc,
-	collection,
-	getDocs,
-	getDoc,
-	setDoc,
-	doc,
-	updateDoc,
-	deleteDoc,
-	Timestamp,
-	DocumentSnapshot,
-	type DocumentData,
-	DocumentReference,
-} from 'firebase/firestore';
-import { customAlphabet, nanoid } from 'nanoid';
+import { dedupWordBank, extractCategories } from '@/utils/helperFunctions';
+import { getDoc, setDoc, doc, deleteDoc } from 'firebase/firestore';
+import { customAlphabet } from 'nanoid';
 
 import { db } from './firebase';
 
-const TEMPLATE_COLLECTION = 'templates';
 const WORDBANK_COLLECTION = 'wordbank';
 const generateId = customAlphabet('0123456789ABCDFGHJKLMNPQRSTUVWXYZ');
-
-// export async function createTemplate(template: Template): Promise< Template> {
-// 	const createdAt = new Date();
-// 	const docRef = await timeout(addDoc(collection(db, TEMPLATE_COLLECTION), { ...template, createdAt }));
-// 	return {
-// 		...template,
-// 		id: docRef.id,
-// 		createdAt: createdAt.getTime(),
-// 	};
-// }
-
-// export async function fetchSavedTemplates() {
-// 	const result = await timeout(getDocs(collection(db, TEMPLATE_COLLECTION)));
-// 	return result.docs.map(docObjectToTemplate);
-// }
-
-// export async function fetchTemplate(templateId: string) {
-// 	const result = await timeout(getDoc(doc(db, TEMPLATE_COLLECTION, templateId)));
-// 	return docObjectToTemplate(result);
-// }
-
-// export function updateTemplate(templateId: string, template: Partial<Template>) {
-// 	return timeout(updateDoc(doc(db, TEMPLATE_COLLECTION, templateId), template));
-// }
-
-// export function deleteTemplate(templateId: string) {
-// 	return timeout(deleteDoc(doc(db, TEMPLATE_COLLECTION, templateId)));
-// }
-
-// function docObjectToTemplate(docObj: DocumentSnapshot<DocumentData, DocumentData>): SavedTemplate | undefined {
-// 	const template = docObj.data();
-// 	return template
-// 		? {
-// 				id: docObj.id,
-// 				title: template.title,
-// 				text: template.text,
-// 				createdAt: (template.createdAt as Timestamp).toDate().getTime(),
-// 			}
-// 		: undefined;
-// }
 
 async function timeout<T>(promise: Promise<T>, timeoutVal = 30000): Promise<T> {
 	return Promise.race([

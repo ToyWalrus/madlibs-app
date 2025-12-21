@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState, type JSX } from 'react';
-import { PinInput } from 'react-input-pin-code';
 
 import {
 	ActionButton,
@@ -9,10 +8,8 @@ import {
 	Card,
 	Content,
 	CustomDialog,
-	Dialog,
 	DialogTrigger,
 	Footer,
-	Form,
 	Heading,
 	IllustratedMessage,
 	MenuItem,
@@ -20,9 +17,10 @@ import {
 	Tag,
 	TagGroup,
 	Text,
-	TextField,
+	UNSTABLE_ToastQueue,
 } from '@react-spectrum/s2';
 import Delete from '@react-spectrum/s2/icons/Delete';
+import Edit from '@react-spectrum/s2/icons/Edit';
 import EmptyIllustration from '@react-spectrum/s2/illustrations/linear/NoLibraries';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
@@ -32,8 +30,7 @@ import { deleteWordbank, ensureWordbankExists } from '@/database';
 import { useSelector } from '@/store';
 import { selectTemplates } from '@/store/templatesSlice';
 import type { Template } from '@/types';
-import { extractCategories } from '@/utils/extractCategories';
-import { capitalize } from '@/utils/helperFunctions';
+import { capitalize, extractCategories } from '@/utils/helperFunctions';
 
 export function Templates() {
 	const templates = useSelector(selectTemplates);
@@ -118,9 +115,10 @@ interface TemplateItemProps {
 	onEdit?: VoidFunction;
 	onShare?: VoidPromise;
 	onDelete?: VoidPromise;
+	onGenerate?: VoidPromise;
 }
 
-function TemplateItem({ template, onDelete, onEdit, onShare }: TemplateItemProps) {
+function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: TemplateItemProps) {
 	const { shareId, title, text } = template;
 	const categories = useMemo(() => extractCategories(text).map(c => ({ id: c, label: capitalize(c) })), [text]);
 	const [isSharing, setIsSharing] = useState(false);
@@ -143,6 +141,10 @@ function TemplateItem({ template, onDelete, onEdit, onShare }: TemplateItemProps
 				<Text slot="title">{title}</Text>
 				<Text slot="description">{text}</Text>
 				<ActionMenu>
+					<MenuItem onAction={onEdit} isDisabled={isDeleting}>
+						<Edit />
+						<Text>Edit</Text>
+					</MenuItem>
 					<MenuItem UNSAFE_style={{ color: '#d73220' }} onAction={wrapInLoader(onDelete, setIsDeleting)}>
 						<Delete />
 						<Text>Delete</Text>
@@ -154,27 +156,96 @@ function TemplateItem({ template, onDelete, onEdit, onShare }: TemplateItemProps
 					{category => <Tag>{category.label}</Tag>}
 				</TagGroup>
 				<ButtonGroup>
-					<DialogTrigger>
-						<Button variant="secondary" onPress={wrapInLoader(onShare, setIsSharing)}>
-							Share
-						</Button>
-						<CustomDialog isDismissible size="S">
-							<div className={style({ display: 'flex', justifyContent: 'center', alignItems: 'center' })}>
-								{isSharing ? (
-									<ProgressCircle isIndeterminate />
-								) : (
-									<ActionButton onPress={() => navigator.clipboard.writeText(shareId)}>
-										{shareId}
-									</ActionButton>
-								)}
-							</div>
-						</CustomDialog>
-					</DialogTrigger>
-					<Button variant="accent" onPress={onEdit}>
-						Edit
+					<ShareButton
+						shareId={shareId}
+						onShare={wrapInLoader(onShare, setIsSharing)}
+						isSharing={isSharing}
+						isDisabled={isDeleting}
+					/>
+					<Button variant="premium" isDisabled={isDeleting} onPress={onGenerate}>
+						Generate
 					</Button>
 				</ButtonGroup>
 			</Footer>
 		</Card>
+	);
+}
+
+interface ShareButtonProps {
+	shareId: string;
+	onShare: VoidPromise;
+	isSharing: boolean;
+	isDisabled?: boolean;
+}
+
+function ShareButton({ shareId, onShare, isSharing }: ShareButtonProps) {
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+	return (
+		<DialogTrigger isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
+			<Button variant="secondary" onPress={onShare}>
+				Share
+			</Button>
+			<CustomDialog isDismissible size="S">
+				<div
+					className={style({
+						display: 'grid',
+						gridTemplateColumns: '1fr 2fr',
+						gridTemplateRows: '1fr 1fr',
+						gap: 4,
+					})}
+				>
+					<Text
+						styles={style({
+							gridColumnStart: '1',
+							gridRowStart: '1',
+							fontSize: 'heading',
+							fontWeight: 'title',
+							marginBottom: 0,
+						})}
+					>
+						Share ID
+					</Text>
+					{!isSharing && (
+						<Text
+							styles={style({
+								gridColumnStart: '1',
+								gridRowStart: '2',
+								color: 'GrayText',
+								fontSize: 'body-sm',
+							})}
+						>
+							Click to copy
+						</Text>
+					)}
+					<div
+						className={style({
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							gridColumnStart: '2',
+							gridRowStart: 'span 2',
+						})}
+					>
+						{isSharing ? (
+							<ProgressCircle isIndeterminate />
+						) : (
+							<ActionButton
+								size="XL"
+								onPress={() => {
+									navigator.clipboard.writeText(shareId);
+									UNSTABLE_ToastQueue.positive('Copied', { timeout: 3000 });
+									setTimeout(() => {
+										setIsDialogOpen(false);
+									}, 500);
+								}}
+							>
+								{shareId}
+							</ActionButton>
+						)}
+					</div>
+				</div>
+			</CustomDialog>
+		</DialogTrigger>
 	);
 }
