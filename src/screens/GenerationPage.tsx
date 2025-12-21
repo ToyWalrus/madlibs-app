@@ -12,7 +12,7 @@ export function GenerationPage({ template }: GenerationPageProps) {
 	return (
 		<PageLayout title="Generate story" showBackButton={!!template}>
 			{!template && <NoTemplate />}
-			Hi
+			{/* TODO: generation functionality */}
 		</PageLayout>
 	);
 }

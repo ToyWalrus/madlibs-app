@@ -26,7 +26,7 @@ interface TemplateCreationProps {
 export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 	const [text, setText] = useState(existingTemplate?.text ?? '');
 	const [title, setTitle] = useState(existingTemplate?.title ?? '');
-	const templateShareId = useMemo(() => existingTemplate?.shareId ?? generateShareId(), []);
+	const shareId = useMemo(() => existingTemplate?.shareId ?? generateShareId(), []);
 	const navigate = useNavigate();
 
 	return (
@@ -37,12 +37,9 @@ export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 			headerActions={
 				<Button
 					variant="accent"
+					isDisabled={!title || !text}
 					onPress={() => {
-						saveTemplate({
-							text,
-							title,
-							shareId: templateShareId,
-						});
+						saveTemplate({ text, title, shareId });
 						UNSTABLE_ToastQueue.positive('Saved', { timeout: 3000 });
 						navigate('/');
 					}}
@@ -63,6 +60,7 @@ export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 				styles={style({ width: 'full', marginBottom: 16 })}
 				value={text}
 				onChange={setText}
+				// TODO: Validate bracket pairing in story
 			/>
 			<InstructionArea />
 		</PageLayout>

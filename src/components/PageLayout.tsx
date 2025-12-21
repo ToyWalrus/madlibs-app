@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ActionButton, Heading, LinkButton, Text } from '@react-spectrum/s2';
+import { ActionButton, Heading } from '@react-spectrum/s2';
 import Home from '@react-spectrum/s2/icons/Home';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
