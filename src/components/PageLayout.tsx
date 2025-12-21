@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { Heading } from '@react-spectrum/s2';
+import { ActionButton, Heading, LinkButton, Text } from '@react-spectrum/s2';
+import Home from '@react-spectrum/s2/icons/Home';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import clsx from 'clsx';
@@ -11,9 +13,18 @@ interface PageLayoutProps {
 	headerActions?: ReactNode;
 	isEmptyPage?: boolean;
 	className?: string;
+	showBackButton?: boolean;
 }
 
-export function PageLayout({ children, title, headerActions, className, isEmptyPage = false }: PageLayoutProps) {
+export function PageLayout({
+	children,
+	title,
+	showBackButton,
+	headerActions,
+	className,
+	isEmptyPage = false,
+}: PageLayoutProps) {
+	const navigate = useNavigate();
 	return (
 		<div
 			className={clsx(
@@ -33,14 +44,13 @@ export function PageLayout({ children, title, headerActions, className, isEmptyP
 						lg: 'start',
 					},
 					width: {
-						// default: 'full',
 						md: 500,
 						lg: 600,
 					},
 				})({ isEmptyPage }),
 			)}
 		>
-			{(title || headerActions) && (
+			{(title || headerActions || showBackButton) && (
 				<div
 					className={style({
 						flexDirection: 'row',
@@ -50,11 +60,26 @@ export function PageLayout({ children, title, headerActions, className, isEmptyP
 						gap: 16,
 						alignSelf: 'start',
 						width: 'full',
+						marginTop: 8,
 					})}
 				>
-					<Heading level={1} styles={style({ alignSelf: 'start', fontWeight: 'normal', color: 'heading' })}>
-						{title}
-					</Heading>
+					<div
+						className={style({
+							display: 'flex',
+							flexDirection: 'row',
+							alignItems: 'center',
+							gap: 12,
+						})}
+					>
+						{showBackButton && (
+							<ActionButton onPress={() => navigate('/')}>
+								<Home />
+							</ActionButton>
+						)}
+						<Heading level={1} styles={style({ fontWeight: 'normal', color: 'heading', margin: 0 })}>
+							{title}
+						</Heading>
+					</div>
 					{headerActions}
 				</div>
 			)}

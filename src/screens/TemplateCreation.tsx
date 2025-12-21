@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
 	Button,
@@ -24,12 +25,14 @@ interface TemplateCreationProps {
 
 export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 	const [text, setText] = useState(existingTemplate?.text ?? '');
-	const [title, setTitle] = useState(existingTemplate?.title ?? 'My story');
+	const [title, setTitle] = useState(existingTemplate?.title ?? '');
 	const templateShareId = useMemo(() => existingTemplate?.shareId ?? generateShareId(), []);
+	const navigate = useNavigate();
 
 	return (
 		<PageLayout
 			className={style({ gap: 8 })}
+			showBackButton
 			title={`${existingTemplate ? 'Edit' : 'New'} story`}
 			headerActions={
 				<Button
@@ -41,7 +44,7 @@ export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 							shareId: templateShareId,
 						});
 						UNSTABLE_ToastQueue.positive('Saved', { timeout: 3000 });
-						// TODO: navigate back to template list
+						navigate('/');
 					}}
 				>
 					Save
@@ -51,10 +54,16 @@ export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 			<TextField
 				styles={style({ width: 'full', marginBottom: 8 })}
 				label="Story name"
+				placeholder="My story"
 				value={title}
 				onChange={setTitle}
 			/>
-			<TextArea styles={style({ width: 'full', marginBottom: 16 })} value={text} onChange={setText} />
+			<TextArea
+				placeholder="Once upon a time..."
+				styles={style({ width: 'full', marginBottom: 16 })}
+				value={text}
+				onChange={setText}
+			/>
 			<InstructionArea />
 		</PageLayout>
 	);

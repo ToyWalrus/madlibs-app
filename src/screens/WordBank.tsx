@@ -96,7 +96,7 @@ export function WordBank({ shareId }: WordBankProps) {
 
 	if (!shareId) {
 		return (
-			<PageLayout isEmptyPage>
+			<PageLayout showBackButton isEmptyPage>
 				<IllustratedMessage>
 					<WarningIllustration />
 					<Content>No word bank loaded</Content>
@@ -117,6 +117,7 @@ export function WordBank({ shareId }: WordBankProps) {
 
 	return (
 		<PageLayout
+			showBackButton
 			className={style({ gap: 16 })}
 			title="Word bank"
 			headerActions={

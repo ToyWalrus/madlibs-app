@@ -16,10 +16,14 @@ async function timeout<T>(promise: Promise<T>, timeoutVal = 30000): Promise<T> {
 	]);
 }
 
-export async function ensureWordbankExists(template: Template) {
-	const docRef = doc(db, WORDBANK_COLLECTION, template.shareId);
+export async function shareIdExists(shareId: string) {
+	const docRef = doc(db, WORDBANK_COLLECTION, shareId);
 	const snapshot = await timeout(getDoc(docRef));
-	if (!snapshot.exists()) {
+	return snapshot.exists();
+}
+
+export async function ensureWordbankExists(template: Template) {
+	if (!(await shareIdExists(template.shareId))) {
 		await shareCategories(template);
 	}
 }
@@ -79,4 +83,9 @@ export function deleteSavedTemplate(shareId: string) {
 export function getAllSavedTemplates(): Template[] {
 	const val = localStorage.getItem(TEMPLATES_KEY);
 	return val ? JSON.parse(val) : [];
+}
+
+export function getSavedTemplate(shareId?: string) {
+	const templateList = getAllSavedTemplates();
+	return templateList.find(t => t.shareId === shareId);
 }

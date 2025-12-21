@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
 	ActionButton,
@@ -12,6 +13,7 @@ import {
 	Footer,
 	Heading,
 	IllustratedMessage,
+	LinkButton,
 	MenuItem,
 	ProgressCircle,
 	Tag,
@@ -26,12 +28,19 @@ import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import { PageLayout } from '@/components/PageLayout';
 import { ShareCodeEntryDialog } from '@/components/ShareCodeDialog';
-import { deleteSavedTemplate, deleteWordbank, ensureWordbankExists, getAllSavedTemplates } from '@/database';
+import {
+	deleteSavedTemplate,
+	deleteWordbank,
+	ensureWordbankExists,
+	getAllSavedTemplates,
+	shareIdExists,
+} from '@/database';
 import type { Template } from '@/types';
 import { capitalize, extractCategories } from '@/utils/helperFunctions';
 
 export function TemplateList() {
 	const [templateList, setTemplatesList] = useState(getAllSavedTemplates());
+	const navigate = useNavigate();
 
 	let component: JSX.Element;
 	if (!templateList.length) {
@@ -49,7 +58,16 @@ export function TemplateList() {
 					<TemplateItem
 						key={t.shareId}
 						template={t}
-						onShare={() => ensureWordbankExists(t)}
+						onEdit={() => {
+							navigate(`/create/${t.shareId}`);
+						}}
+						onShare={async () => {
+							try {
+								await ensureWordbankExists(t);
+							} catch {
+								UNSTABLE_ToastQueue.negative('Something went wrong');
+							}
+						}}
 						onDelete={async () => {
 							try {
 								await deleteWordbank(t.shareId);
@@ -79,10 +97,13 @@ export function TemplateList() {
 						gap: 8,
 					})}
 				>
-					<Button variant="accent">Create</Button>
+					<LinkButton variant="accent" href="/create">
+						Create
+					</LinkButton>
 					<ShareCodeEntryDialog
 						buttonText="Enter share code"
-						onSubmit={() => new Promise(r => setTimeout(() => r(true), 400))}
+						onSubmit={id => shareIdExists(id)}
+						onRouteToPage={id => navigate(`/wordbank/${id}`)}
 					/>
 				</div>
 			}

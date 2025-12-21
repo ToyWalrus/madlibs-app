@@ -1,52 +1,55 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider as ReduxProvider } from 'react-redux';
+import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 
-import { Provider as S2Provider, UNSTABLE_ToastContainer, Tab, TabList, TabPanel, Tabs } from '@react-spectrum/s2';
+import { Provider as S2Provider, UNSTABLE_ToastContainer } from '@react-spectrum/s2';
 import '@react-spectrum/s2/page.css';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
+import { getSavedTemplate } from '@/database';
+import { GenerationPage } from '@/screens/GenerationPage';
+import { TemplateCreation } from '@/screens/TemplateCreation';
 import { TemplateList } from '@/screens/TemplateList';
-import { WordBank } from '@/screens/WordBank.tsx';
-import store, { useDispatch, useSelector } from '@/store';
-import { selectCurrentTab, setCurrentTab, type AppTab } from '@/store/appSlice.ts';
-
-import { TemplateCreation } from './screens/TemplateCreation';
+import { WordBank } from '@/screens/WordBank';
+import store from '@/store';
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<ReduxProvider store={store}>
-			<App />
+			<BrowserRouter>
+				<App />
+			</BrowserRouter>
 		</ReduxProvider>
 	</StrictMode>,
 );
 
 function App() {
-	const currentTab = useSelector(selectCurrentTab);
-	const dispatch = useDispatch();
-
 	return (
 		<S2Provider background="layer-1" styles={style({ height: 'full', overflow: 'hidden' })}>
-			{/* <TemplateList /> */}
-			<TemplateCreation />
-			{/* <WordBank shareId={'0'} /> */}
+			<Routes>
+				<Route path="/" element={<TemplateList />} />
+				<Route path="/create" element={<TemplateCreation />} />
+				<Route path="/create/:shareId" element={<EditPageWrapper />} />
+				<Route path="/wordbank/:shareId" element={<WordBankWrapper />} />
+				<Route path="/generate/:shareId" element={<GenerationPageWrapper />} />
+			</Routes>
 			<UNSTABLE_ToastContainer placement="bottom" />
-			{/* <Tabs
-				aria-label="Tabs"
-				onSelectionChange={key => dispatch(setCurrentTab(key as AppTab))}
-				selectedKey={currentTab}
-			>
-				<TabList>
-					<Tab id="templates">Templates</Tab>
-					<Tab id="words">Shared</Tab>
-				</TabList>
-				<TabPanel id="templates">
-					<Templates />
-				</TabPanel>
-				<TabPanel id="words">
-					<WordBank />
-				</TabPanel>
-			</Tabs> */}
 		</S2Provider>
 	);
+}
+
+function GenerationPageWrapper() {
+	const params = useParams();
+	return <GenerationPage template={getSavedTemplate(params.shareId)} />;
+}
+
+function EditPageWrapper() {
+	const params = useParams();
+	return <TemplateCreation existingTemplate={getSavedTemplate(params.shareId)} />;
+}
+
+function WordBankWrapper() {
+	const params = useParams();
+	return <WordBank shareId={params.shareId} />;
 }
