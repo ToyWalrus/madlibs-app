@@ -32,7 +32,7 @@ import { selectTemplates } from '@/store/templatesSlice';
 import type { Template } from '@/types';
 import { capitalize, extractCategories } from '@/utils/helperFunctions';
 
-export function Templates() {
+export function TemplateList() {
 	const templates = useSelector(selectTemplates);
 
 	let component: JSX.Element;
@@ -71,26 +71,17 @@ export function Templates() {
 	}
 
 	return (
-		<PageLayout isEmptyPage={!templates.length} className={style({ gap: 24 })}>
-			<div
-				className={style({
-					flexDirection: 'row',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-					gap: 16,
-					alignSelf: 'start',
-					width: 'full',
-				})}
-			>
-				<Heading level={1} styles={style({ fontWeight: 'normal', color: 'heading' })}>
-					My templates
-				</Heading>
+		<PageLayout
+			isEmptyPage={!templates.length}
+			className={style({ gap: 24 })}
+			title="My templates"
+			headerActions={
 				<ShareCodeEntryDialog
 					buttonText="Enter share code"
 					onSubmit={() => new Promise(r => setTimeout(() => r(true), 400))}
 				/>
-			</div>
+			}
+		>
 			<div
 				className={style({
 					display: 'flex',

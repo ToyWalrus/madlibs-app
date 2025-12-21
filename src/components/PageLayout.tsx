@@ -1,16 +1,19 @@
 import type { ReactNode } from 'react';
 
+import { Heading } from '@react-spectrum/s2';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import clsx from 'clsx';
 
 interface PageLayoutProps {
 	children: ReactNode;
+	title?: string;
+	headerActions?: ReactNode;
 	isEmptyPage?: boolean;
 	className?: string;
 }
 
-export function PageLayout({ children, className, isEmptyPage = false }: PageLayoutProps) {
+export function PageLayout({ children, title, headerActions, className, isEmptyPage = false }: PageLayoutProps) {
 	return (
 		<div
 			className={clsx(
@@ -37,6 +40,24 @@ export function PageLayout({ children, className, isEmptyPage = false }: PageLay
 				})({ isEmptyPage }),
 			)}
 		>
+			{(title || headerActions) && (
+				<div
+					className={style({
+						flexDirection: 'row',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+						gap: 16,
+						alignSelf: 'start',
+						width: 'full',
+					})}
+				>
+					<Heading level={1} styles={style({ alignSelf: 'start', fontWeight: 'normal', color: 'heading' })}>
+						{title}
+					</Heading>
+					{headerActions}
+				</div>
+			)}
 			{children}
 		</div>
 	);

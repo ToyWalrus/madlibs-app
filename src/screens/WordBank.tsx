@@ -117,25 +117,15 @@ export function WordBank({ shareId }: WordBankProps) {
 	}
 
 	return (
-		<PageLayout className={style({ gap: 16 })}>
-			<div
-				className={style({
-					flexDirection: 'row',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-					gap: 16,
-					alignSelf: 'start',
-					width: 'full',
-				})}
-			>
-				<Heading level={1} styles={style({ alignSelf: 'start', fontWeight: 'normal', color: 'heading' })}>
-					Word bank
-				</Heading>
+		<PageLayout
+			className={style({ gap: 16 })}
+			title="Word bank"
+			headerActions={
 				<Button variant="accent" isDisabled={!hasWords(localWordBank)} onPress={onSubmitWords}>
 					Submit
 				</Button>
-			</div>
+			}
+		>
 			<div className={style({ minHeight: 'fit' })}>
 				<ToggleButton size="L" isSelected={showExistingWords} onChange={setShowExistingWords}>
 					Show submitted words

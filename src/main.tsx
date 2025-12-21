@@ -6,7 +6,7 @@ import { Provider as S2Provider, UNSTABLE_ToastContainer, Tab, TabList, TabPanel
 import '@react-spectrum/s2/page.css';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
-import { Templates } from '@/screens/Templates.tsx';
+import { TemplateList } from '@/screens/TemplateList';
 import { WordBank } from '@/screens/WordBank.tsx';
 import store, { useDispatch, useSelector } from '@/store';
 import { selectCurrentTab, setCurrentTab, type AppTab } from '@/store/appSlice.ts';
@@ -25,7 +25,7 @@ function App() {
 
 	return (
 		<S2Provider background="layer-1" styles={style({ height: 'full', overflow: 'hidden' })}>
-			<Templates />
+			<TemplateList />
 			{/* <WordBank shareId={'0'} /> */}
 			<UNSTABLE_ToastContainer placement="bottom" />
 			{/* <Tabs
