@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ActionButton, Heading } from '@react-spectrum/s2';
-import Home from '@react-spectrum/s2/icons/Home';
+import ChevronLeft from '@react-spectrum/s2/icons/ChevronLeft';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import clsx from 'clsx';
@@ -53,12 +53,12 @@ export function PageLayout({
 			{(title || headerActions || showBackButton) && (
 				<div
 					className={style({
-						flexDirection: 'row',
 						display: 'flex',
+						flexDirection: 'row',
 						alignItems: 'center',
 						justifyContent: 'space-between',
+						height: 64,
 						gap: 16,
-						alignSelf: 'start',
 						width: 'full',
 						marginTop: 8,
 					})}
@@ -72,11 +72,19 @@ export function PageLayout({
 						})}
 					>
 						{showBackButton && (
-							<ActionButton onPress={() => navigate('/')}>
-								<Home />
+							<ActionButton isQuiet size="L" onPress={() => navigate(-1)}>
+								<ChevronLeft />
 							</ActionButton>
 						)}
-						<Heading level={1} styles={style({ fontWeight: 'normal', color: 'heading', margin: 0 })}>
+						<Heading
+							level={1}
+							styles={style({
+								fontWeight: 'normal',
+								color: 'heading',
+								margin: 0,
+								alignSelf: 'start',
+							})}
+						>
 							{title}
 						</Heading>
 					</div>

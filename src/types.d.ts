@@ -10,3 +10,19 @@ export interface WordBank<const T extends readonly string[] = string[]> {
 		[K in T[number]]: string[];
 	};
 }
+
+export type TextColorOption =
+	| 'gray'
+	| 'red'
+	| 'orange'
+	| 'yellow'
+	| 'chartreuse'
+	| 'celery'
+	| 'green'
+	| 'seafoam'
+	| 'cyan'
+	| 'blue'
+	| 'indigo'
+	| 'purple'
+	| 'fuchsia'
+	| 'magenta';

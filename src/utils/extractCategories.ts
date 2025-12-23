@@ -1,3 +1,5 @@
+import type { TextColorOption } from '@/types';
+
 import { categoryRegex } from './constants';
 import { parseCamelCase } from './helperFunctions';
 
@@ -42,4 +44,12 @@ export function extractCategories(text: string) {
 	}
 
 	return { categories: Array.from(categories), totalWordsNeeded: adjustedCount };
+}
+
+export function extractColorFromWord(word: string): { color: TextColorOption | undefined; word: string } {
+	const match = word.match(/([A-z\-\d]+)?\|(.*)/);
+	if (!match) {
+		return { color: undefined, word };
+	}
+	return { color: (match[1] as TextColorOption) ?? undefined, word: match[2] };
 }

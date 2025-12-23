@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
+import { useCallback, useMemo, useState, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -38,7 +38,6 @@ import {
 } from '@/database';
 import type { Template } from '@/types';
 import { extractCategories } from '@/utils/extractCategories';
-import { generateStory, getReplacementRanges } from '@/utils/generateStory';
 import { capitalize } from '@/utils/helperFunctions';
 
 export function TemplateList() {
