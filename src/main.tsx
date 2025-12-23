@@ -12,6 +12,8 @@ import { TemplateCreation } from '@/screens/TemplateCreation';
 import { TemplateList } from '@/screens/TemplateList';
 import { WordBank } from '@/screens/WordBank';
 
+import { AuthWrapper } from './AuthWrapper';
+
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<BrowserRouter>
@@ -23,13 +25,15 @@ createRoot(document.getElementById('root')!).render(
 function App() {
 	return (
 		<S2Provider background="layer-1" styles={style({ height: 'full', overflow: 'hidden' })}>
-			<Routes>
-				<Route path="/" element={<TemplateList />} />
-				<Route path="/create" element={<TemplateCreation />} />
-				<Route path="/create/:shareId" element={<EditPageWrapper />} />
-				<Route path="/wordbank/:shareId" element={<WordBankWrapper />} />
-				<Route path="/generate/:shareId" element={<GenerationPageWrapper />} />
-			</Routes>
+			<AuthWrapper>
+				<Routes>
+					<Route path="/" element={<TemplateList />} />
+					<Route path="/create" element={<TemplateCreation />} />
+					<Route path="/create/:shareId" element={<EditPageWrapper />} />
+					<Route path="/wordbank/:shareId" element={<WordBankWrapper />} />
+					<Route path="/generate/:shareId" element={<GenerationPageWrapper />} />
+				</Routes>
+			</AuthWrapper>
 			<UNSTABLE_ToastContainer placement="bottom" />
 		</S2Provider>
 	);

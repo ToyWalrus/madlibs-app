@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: find way to do a secret store? Do these secrets get bundled in the output?
 export const app = initializeApp({
 	appId: import.meta.env.VITE_FB_APP_ID,
 	apiKey: import.meta.env.VITE_FB_API_KEY,
@@ -13,3 +13,8 @@ export const app = initializeApp({
 });
 
 export const db = getFirestore(app);
+
+export function authenticate() {
+	const auth = getAuth(app);
+	return signInAnonymously(auth);
+}
