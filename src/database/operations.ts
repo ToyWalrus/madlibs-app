@@ -1,5 +1,6 @@
 import type { Template, WordBank } from '@/types';
-import { dedupWordBank, extractCategories } from '@/utils/helperFunctions';
+import { extractCategories } from '@/utils/extractCategories';
+import { dedupWordBank } from '@/utils/helperFunctions';
 import { getDoc, setDoc, doc, deleteDoc } from 'firebase/firestore';
 
 import { db } from './firebase';
@@ -29,7 +30,7 @@ export async function ensureWordbankExists(template: Template) {
 }
 
 export async function shareCategories(template: Template) {
-	const categories = extractCategories(template.text);
+	const categories = extractCategories(template.text).categories;
 	const categoryWords = categories.reduce((acc, cur) => ({ [cur]: [], ...acc }), {});
 	await timeout(setDoc(doc(db, WORDBANK_COLLECTION, template.shareId), { categories, words: categoryWords }));
 }

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type JSX } from 'react';
+import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -37,8 +37,9 @@ import {
 	shareIdExists,
 } from '@/database';
 import type { Template } from '@/types';
+import { extractCategories } from '@/utils/extractCategories';
 import { generateStory, getReplacementRanges } from '@/utils/generateStory';
-import { capitalize, extractCategories } from '@/utils/helperFunctions';
+import { capitalize } from '@/utils/helperFunctions';
 
 export function TemplateList() {
 	const [templateList, setTemplatesList] = useState(getAllSavedTemplates());
@@ -79,10 +80,8 @@ export function TemplateList() {
 								UNSTABLE_ToastQueue.negative('Something went wrong');
 							}
 						}}
-						onGenerate={async () => {
-							const wordbank = await fetchWordbank(t.shareId);
-							const story = generateStory(t.text, wordbank, getReplacementRanges(t.text, wordbank));
-							console.log(story);
+						onGenerate={() => {
+							navigate(`/generate/${t.shareId}`);
 						}}
 					/>
 				))}
@@ -140,14 +139,27 @@ interface TemplateItemProps {
 	onEdit?: VoidFunction;
 	onShare?: VoidPromise;
 	onDelete?: VoidPromise;
-	onGenerate?: VoidPromise;
+	onGenerate?: VoidFunction;
 }
 
 function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: TemplateItemProps) {
 	const { shareId, title, text } = template;
-	const categories = useMemo(() => extractCategories(text).map(c => ({ id: c, label: capitalize(c) })), [text]);
+	const { categories, wordCount } = useMemo(() => {
+		const result = extractCategories(text);
+		return { ...result, categories: result.categories.map(c => ({ id: c, label: capitalize(c) })) };
+	}, [text]);
 	const [isSharing, setIsSharing] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [canGenerate, setCanGenerate] = useState(false);
+
+	const determineCanGenerate = useCallback(async () => {
+		console.log('wordcount', template.title, wordCount);
+		// const wordbank = await fetchWordbank(template.shareId);
+	}, [wordCount, template]);
+
+	useEffect(() => {
+		determineCanGenerate();
+	}, [determineCanGenerate]);
 
 	const wrapInLoader = useCallback(
 		(fn: VoidPromise | undefined, loadingSetter: (loading: boolean) => void) => async () => {
@@ -187,7 +199,7 @@ function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: Templ
 						isSharing={isSharing}
 						isDisabled={isDeleting}
 					/>
-					<Button variant="premium" isDisabled={isDeleting} onPress={onGenerate}>
+					<Button variant="premium" isDisabled={isDeleting || !canGenerate} onPress={onGenerate}>
 						Generate
 					</Button>
 				</ButtonGroup>

@@ -15,22 +15,6 @@ export function capitalize(str?: string) {
 }
 
 /**
- * Extracts all the categories from a template's text string and returns them as
- * an array of lowercase strings.
- */
-export function extractCategories(text: string): string[] {
-	const categories: Set<string> = new Set();
-
-	const matches = text.matchAll(categoryRegex);
-	for (const match of matches) {
-		const text = parseCamelCase(match[1]).join(' ');
-		categories.add(text.toLowerCase());
-	}
-
-	return Array.from(categories);
-}
-
-/**
  * Returns a randomly generated 5-character string of alpha-numeric characters.
  */
 const generateId = customAlphabet('0123456789ABCDFGHJKLMNPQRSTUVWXYZ');
