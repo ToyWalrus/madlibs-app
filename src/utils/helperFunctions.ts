@@ -1,8 +1,6 @@
 import type { WordBank } from '@/types';
 import { customAlphabet } from 'nanoid';
 
-import { categoryRegex } from './constants';
-
 /**
  * Capitalizes a string.
  *

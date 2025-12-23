@@ -144,22 +144,21 @@ interface TemplateItemProps {
 
 function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: TemplateItemProps) {
 	const { shareId, title, text } = template;
-	const { categories, wordCount } = useMemo(() => {
+	const { categories, totalWordsNeeded } = useMemo(() => {
 		const result = extractCategories(text);
 		return { ...result, categories: result.categories.map(c => ({ id: c, label: capitalize(c) })) };
 	}, [text]);
 	const [isSharing, setIsSharing] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [canGenerate, setCanGenerate] = useState(false);
 
-	const determineCanGenerate = useCallback(async () => {
-		console.log('wordcount', template.title, wordCount);
-		// const wordbank = await fetchWordbank(template.shareId);
-	}, [wordCount, template]);
-
-	useEffect(() => {
-		determineCanGenerate();
-	}, [determineCanGenerate]);
+	const determineHasEnoughWordsForGeneration = useCallback(async () => {
+		const wordbank = await fetchWordbank(template.shareId);
+		return wordbank.categories.every(category => {
+			const wordCount = wordbank.words[category].length;
+			const wordsNeeded = totalWordsNeeded[category];
+			return wordCount >= wordsNeeded;
+		});
+	}, [totalWordsNeeded, template.shareId]);
 
 	const wrapInLoader = useCallback(
 		(fn: VoidPromise | undefined, loadingSetter: (loading: boolean) => void) => async () => {
@@ -199,7 +198,17 @@ function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: Templ
 						isSharing={isSharing}
 						isDisabled={isDeleting}
 					/>
-					<Button variant="premium" isDisabled={isDeleting || !canGenerate} onPress={onGenerate}>
+					<Button
+						variant="premium"
+						isDisabled={isDeleting}
+						onPress={async () => {
+							if (!onGenerate) return;
+							if (!(await determineHasEnoughWordsForGeneration())) {
+								UNSTABLE_ToastQueue.neutral(`Not enough words for full generation`, { timeout: 4000 });
+							}
+							onGenerate();
+						}}
+					>
 						Generate
 					</Button>
 				</ButtonGroup>

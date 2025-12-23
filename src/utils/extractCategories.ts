@@ -41,5 +41,5 @@ export function extractCategories(text: string) {
 		adjustedCount[category] += countObjects.filter(obj => !obj.hasCategoryWithoutId).length;
 	}
 
-	return { categories: Array.from(categories), wordCount: adjustedCount };
+	return { categories: Array.from(categories), totalWordsNeeded: adjustedCount };
 }
