@@ -102,7 +102,7 @@ export function TemplateList() {
 						gap: 8,
 					})}
 				>
-					<LinkButton variant="accent" href="/create">
+					<LinkButton variant="accent" onPress={() => navigate('/create')}>
 						Create
 					</LinkButton>
 					<ShareCodeEntryDialog

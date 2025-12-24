@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { IllustratedMessage, Heading, Content, ButtonGroup, LinkButton, Button, Text } from '@react-spectrum/s2';
 import Edit from '@react-spectrum/s2/icons/Edit';
@@ -19,6 +20,7 @@ interface GenerationPageProps {
 export function GenerationPage({ template }: GenerationPageProps) {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [storyText, setStoryText] = useState('');
+	const navigate = useNavigate();
 
 	const wordbankRef = useRef<WordBank | null>(null);
 
@@ -51,7 +53,7 @@ export function GenerationPage({ template }: GenerationPageProps) {
 			showBackButton
 			className={style({ gap: 24 })}
 			headerActions={
-				<LinkButton href={`/create/${template.shareId}`}>
+				<LinkButton onPress={() => navigate(`/create/${template.shareId}`)}>
 					<Edit />
 					<Text>Edit</Text>
 				</LinkButton>
@@ -88,6 +90,8 @@ export function GenerationPage({ template }: GenerationPageProps) {
 }
 
 function NoTemplate() {
+	const navigate = useNavigate();
+
 	return (
 		<div
 			className={style({
@@ -102,7 +106,7 @@ function NoTemplate() {
 				<Heading>Uh oh!</Heading>
 				<Content>This story no longer exists.</Content>
 				<ButtonGroup>
-					<LinkButton href="/">Return</LinkButton>
+					<LinkButton onPress={() => navigate('/')}>Return</LinkButton>
 				</ButtonGroup>
 			</IllustratedMessage>
 		</div>
