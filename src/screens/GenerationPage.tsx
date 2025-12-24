@@ -7,11 +7,14 @@ import Refresh from '@react-spectrum/s2/icons/Refresh';
 import NoComment from '@react-spectrum/s2/illustrations/linear/NoComment';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
-import { CustomMarkdown } from '@/components/CustomMarkdown';
+import { AnimatedStory } from '@/components/AnimatedStory';
 import { PageLayout } from '@/components/PageLayout';
 import { fetchWordbank } from '@/database';
 import type { Template, WordBank } from '@/types';
+import { generateLightColor } from '@/utils/colorUtils';
 import { generateStory } from '@/utils/generateStory';
+
+import './GenerationPage.css';
 
 interface GenerationPageProps {
 	template?: Template;
@@ -20,6 +23,9 @@ interface GenerationPageProps {
 export function GenerationPage({ template }: GenerationPageProps) {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [storyText, setStoryText] = useState('');
+	const [animationKey, setAnimationKey] = useState(0);
+	const [gradientColor1, setGradientColor1] = useState(generateLightColor());
+	const [gradientColor2, setGradientColor2] = useState(generateLightColor());
 	const navigate = useNavigate();
 
 	const wordbankRef = useRef<WordBank | null>(null);
@@ -36,12 +42,15 @@ export function GenerationPage({ template }: GenerationPageProps) {
 		}
 
 		const text = generateStory(template.text, wordbankRef.current);
-		setStoryText(`## ${template.title}\n\n${text}`);
+		setStoryText(text);
+		setAnimationKey(k => k + 1);
+		setGradientColor1(generateLightColor());
+		setGradientColor2(generateLightColor());
 	}, [template?.shareId]);
 
 	useEffect(() => {
 		startStoryGeneration();
-	}, []);
+	}, [startStoryGeneration]);
 
 	if (!template) {
 		return <NoTemplate />;
@@ -61,14 +70,22 @@ export function GenerationPage({ template }: GenerationPageProps) {
 		>
 			<div
 				className={style({
-					backgroundColor: 'gray-100',
 					borderRadius: 'lg',
 					paddingBottom: 16,
 					paddingX: 16,
 					fontSize: 'body',
 				})}
+				style={{
+					background: `linear-gradient(135deg, ${gradientColor1} 0%, ${gradientColor2} 100%)`,
+					animation: 'gradientShift 6s ease-in-out infinite',
+				}}
 			>
-				{isGenerating ? <h2>{template.title}</h2> : <CustomMarkdown>{storyText}</CustomMarkdown>}
+				<h2>{template.title}</h2>
+				{isGenerating ? (
+					<div style={{ paddingTop: 8 }}>Generating…</div>
+				) : (
+					<AnimatedStory key={animationKey} markdown={storyText} />
+				)}
 			</div>
 			<ButtonGroup styles={style({ alignSelf: 'end' })}>
 				<Button

@@ -1,0 +1,11 @@
+@keyframes gradientShift {
+	0% {
+		filter: hue-rotate(0deg) brightness(1);
+	}
+	50% {
+		filter: hue-rotate(10deg) brightness(1.05);
+	}
+	100% {
+		filter: hue-rotate(0deg) brightness(1);
+	}
+}

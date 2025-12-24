@@ -13,7 +13,6 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
 
 	const signInAnonymously = useCallback(async () => {
 		if (hasSignedIn.current) return;
-		console.log('has not signed in');
 
 		setIsSigningIn(true);
 		setHasError(false);
