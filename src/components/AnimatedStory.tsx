@@ -28,8 +28,32 @@ export function AnimatedStory({ markdown, animationDelay = 500, animationDuratio
 						animationFillMode: 'forwards',
 						animationTimingFunction: 'cubic-bezier(.2,.9,.3,1)',
 						animationDelay: `${i * animationDelay}ms`,
+						position: 'relative',
 					}}
 				>
+					<div
+						style={{
+							background:
+								'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .6) 20%, transparent 40%)',
+							backgroundSize: '200% 100%',
+							backgroundPosition: '200% 0',
+							backgroundRepeat: 'no-repeat',
+							backgroundClip: 'text',
+							WebkitBackgroundClip: 'text',
+							color: 'transparent',
+							animation: `shimmer 3s cubic-bezier(.2,.9,.3,1) forwards`,
+							animationIterationCount: 1,
+							animationDelay: `${i * animationDelay}ms`,
+							pointerEvents: 'none',
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
+						}}
+					>
+						<CustomMarkdown>{chunk}</CustomMarkdown>
+					</div>
 					<CustomMarkdown>{chunk}</CustomMarkdown>
 				</div>
 			))}

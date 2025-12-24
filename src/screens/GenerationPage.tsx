@@ -1,13 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { IllustratedMessage, Heading, Content, ButtonGroup, LinkButton, Button, Text } from '@react-spectrum/s2';
+import {
+	IllustratedMessage,
+	Heading,
+	Content,
+	ButtonGroup,
+	LinkButton,
+	Button,
+	Text,
+	ProgressCircle,
+} from '@react-spectrum/s2';
 import Edit from '@react-spectrum/s2/icons/Edit';
 import Refresh from '@react-spectrum/s2/icons/Refresh';
 import NoComment from '@react-spectrum/s2/illustrations/linear/NoComment';
 import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import { AnimatedStory } from '@/components/AnimatedStory';
+import { Confetti } from '@/components/Confetti';
 import { PageLayout } from '@/components/PageLayout';
 import { fetchWordbank } from '@/database';
 import type { Template, WordBank } from '@/types';
@@ -26,6 +36,7 @@ export function GenerationPage({ template }: GenerationPageProps) {
 	const [animationKey, setAnimationKey] = useState(0);
 	const [gradientColor1, setGradientColor1] = useState(generateLightColor());
 	const [gradientColor2, setGradientColor2] = useState(generateLightColor());
+	const [showConfetti, setShowConfetti] = useState(false);
 	const navigate = useNavigate();
 
 	const wordbankRef = useRef<WordBank | null>(null);
@@ -49,7 +60,7 @@ export function GenerationPage({ template }: GenerationPageProps) {
 	}, [template?.shareId]);
 
 	useEffect(() => {
-		startStoryGeneration();
+		startStoryGeneration().then(() => setShowConfetti(true));
 	}, [startStoryGeneration]);
 
 	if (!template) {
@@ -60,7 +71,7 @@ export function GenerationPage({ template }: GenerationPageProps) {
 		<PageLayout
 			title="Generate story"
 			showBackButton
-			className={style({ gap: 24 })}
+			className={style({ gap: 24, isolation: 'isolate' })}
 			headerActions={
 				<LinkButton onPress={() => navigate(`/create/${template.shareId}`)}>
 					<Edit />
@@ -68,40 +79,52 @@ export function GenerationPage({ template }: GenerationPageProps) {
 				</LinkButton>
 			}
 		>
-			<div
-				className={style({
-					borderRadius: 'lg',
-					paddingBottom: 16,
-					paddingX: 16,
-					fontSize: 'body',
-				})}
-				style={{
-					background: `linear-gradient(135deg, ${gradientColor1} 0%, ${gradientColor2} 100%)`,
-					animation: 'gradientShift 6s ease-in-out infinite',
-				}}
-			>
-				<h2>{template.title}</h2>
-				{isGenerating ? (
-					<div style={{ paddingTop: 8 }}>Generating…</div>
-				) : (
-					<AnimatedStory key={animationKey} markdown={storyText} />
-				)}
-			</div>
+			{isGenerating ? (
+				<div className={style({ display: 'flex', alignItems: 'center', justifyContent: 'center' })}>
+					<ProgressCircle isIndeterminate size="L" aria-label="Generating..." />
+				</div>
+			) : (
+				<div
+					className={style({
+						borderRadius: 'lg',
+						paddingBottom: 16,
+						paddingX: 16,
+						fontSize: 'body',
+						boxShadow: 'emphasized',
+					})}
+					style={{
+						background: `linear-gradient(135deg, ${gradientColor1} 0%, ${gradientColor2} 100%)`,
+						animation: 'gradientShift 6s ease-in-out infinite',
+					}}
+				>
+					<h2>{template.title}</h2>
+					<AnimatedStory
+						key={animationKey}
+						markdown={storyText}
+						animationDuration={2000}
+						animationDelay={800}
+					/>
+				</div>
+			)}
 			<ButtonGroup styles={style({ alignSelf: 'end' })}>
 				<Button
 					variant="secondary"
-					onPress={() => {
+					isDisabled={isGenerating}
+					onPress={async () => {
 						wordbankRef.current = null;
-						startStoryGeneration();
+						setShowConfetti(false);
+						await startStoryGeneration();
+						setShowConfetti(true);
 					}}
 				>
 					<Refresh />
 					<Text>Refetch words</Text>
 				</Button>
-				<Button onPress={startStoryGeneration} variant="premium">
+				<Button isDisabled={isGenerating} onPress={startStoryGeneration} variant="premium">
 					Regenerate
 				</Button>
 			</ButtonGroup>
+			{showConfetti && <Confetti />}
 		</PageLayout>
 	);
 }

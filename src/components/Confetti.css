@@ -1,0 +1,43 @@
+@keyframes confettiFall {
+	to {
+		transform: translateY(100vh) rotateZ(360deg);
+		opacity: 0;
+	}
+}
+
+@keyframes confettiFloat {
+	0%,
+	100% {
+		transform: translateX(0) translateY(0) rotateZ(0deg);
+	}
+	50% {
+		transform: translateX(30px) translateY(-10px) rotateZ(180deg);
+	}
+}
+
+.confetti-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.confetti {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	pointer-events: none;
+}
+
+.confetti.falling {
+	animation: confettiFall 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.confetti.floating {
+	animation:
+		confettiFloat 1s ease-in-out infinite,
+		confettiFall 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

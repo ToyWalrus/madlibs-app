@@ -9,3 +9,12 @@
 		filter: hue-rotate(0deg) brightness(1);
 	}
 }
+
+@keyframes shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -100% 0;
+	}
+}
