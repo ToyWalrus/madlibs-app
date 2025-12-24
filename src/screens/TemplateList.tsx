@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type JSX } from 'react';
+import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -149,14 +149,22 @@ function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: Templ
 	}, [text]);
 	const [isSharing, setIsSharing] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [hasBeenShared, setHasBeenShared] = useState(true);
+
+	useEffect(() => {
+		shareIdExists(template.shareId).then(setHasBeenShared);
+	}, [template.shareId, isSharing]);
 
 	const determineHasEnoughWordsForGeneration = useCallback(async () => {
 		const wordbank = await fetchWordbank(template.shareId);
-		return wordbank.categories.every(category => {
-			const wordCount = wordbank.words[category].length;
-			const wordsNeeded = totalWordsNeeded[category];
-			return wordCount >= wordsNeeded;
-		});
+		return {
+			hasAnyWords: wordbank.categories.every(category => wordbank.words[category].length > 0),
+			hasEnoughWords: wordbank.categories.every(category => {
+				const wordCount = wordbank.words[category].length;
+				const wordsNeeded = totalWordsNeeded[category];
+				return wordCount >= wordsNeeded;
+			}),
+		};
 	}, [totalWordsNeeded, template.shareId]);
 
 	const wrapInLoader = useCallback(
@@ -196,15 +204,28 @@ function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: Templ
 						onShare={wrapInLoader(onShare, setIsSharing)}
 						isSharing={isSharing}
 						isDisabled={isDeleting}
+						hasBeenShared={hasBeenShared}
 					/>
 					<Button
 						variant="premium"
-						isDisabled={isDeleting}
+						isDisabled={isDeleting || !hasBeenShared}
 						onPress={async () => {
 							if (!onGenerate) return;
-							if (!(await determineHasEnoughWordsForGeneration())) {
+							const { hasAnyWords, hasEnoughWords } = await determineHasEnoughWordsForGeneration();
+							if (!hasAnyWords) {
+								UNSTABLE_ToastQueue.negative(
+									`One or more categories for this story do not yet have words submitted`,
+									{
+										timeout: 4000,
+									},
+								);
+								return;
+							}
+
+							if (!hasEnoughWords) {
 								UNSTABLE_ToastQueue.neutral(`Not enough words for full generation`, { timeout: 4000 });
 							}
+
 							onGenerate();
 						}}
 					>
@@ -220,15 +241,16 @@ interface ShareButtonProps {
 	shareId: string;
 	onShare: VoidPromise;
 	isSharing: boolean;
+	hasBeenShared: boolean;
 	isDisabled?: boolean;
 }
 
-function ShareButton({ shareId, onShare, isSharing }: ShareButtonProps) {
+function ShareButton({ shareId, hasBeenShared, isDisabled, onShare, isSharing }: ShareButtonProps) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
 		<DialogTrigger isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
-			<Button variant="secondary" onPress={onShare}>
+			<Button isDisabled={isDisabled} variant={hasBeenShared ? 'secondary' : 'accent'} onPress={onShare}>
 				Share
 			</Button>
 			<CustomDialog isDismissible size="S">
