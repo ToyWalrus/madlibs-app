@@ -49,7 +49,7 @@ export function TemplateList() {
 		component = (
 			<IllustratedMessage>
 				<EmptyIllustration />
-				<Heading>No templates yet</Heading>
+				<Heading>No stories yet</Heading>
 				<Content>Get started by creating one!</Content>
 			</IllustratedMessage>
 		);
