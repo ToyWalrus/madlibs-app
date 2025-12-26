@@ -4,4 +4,4 @@
 
 ![logo](public/Howellibs.png)
 
-Deployed at [`howellibs.surge.sh`](howellibs.surge.sh) and [`mad-libs-9e3ad.web.app`](https://mad-libs-9e3ad.web.app/)
+Deployed at [`mad-libs-9e3ad.web.app`](http://mad-libs-9e3ad.web.app/)
