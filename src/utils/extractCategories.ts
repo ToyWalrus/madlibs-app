@@ -1,7 +1,6 @@
 import type { TextColorOption } from '@/types';
 
 import { categoryRegex } from './constants';
-import { parseCamelCase } from './helperFunctions';
 
 interface CategoryWithCount {
 	hasCategoryWithoutId: boolean;
@@ -19,7 +18,7 @@ export function extractCategories(text: string) {
 
 	const matches = text.matchAll(categoryRegex);
 	for (const match of matches) {
-		const text = parseCamelCase(match[1]).join(' ').toLowerCase();
+		const text = match[1].toLowerCase();
 		const id = match[2] ?? '';
 		const categoryWithId = text + id;
 

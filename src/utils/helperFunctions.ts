@@ -48,28 +48,6 @@ export function pickRandom<T>(arr: T[], ignore?: T[], comparator?: (a: T, b: T) 
 }
 
 /**
- * Parses a camelCase string into an array containing all the parts
- * of the string, split before the capital letters.
- *
- * @example
- * parseCamelCase('aSimpleName') -> ['a', 'Simple', 'Name']
- */
-export function parseCamelCase(str: string) {
-	const parts: string[] = [];
-	let prevIdx = 0;
-
-	const regex = /[A-Z]/g;
-	let result: RegExpExecArray | null;
-	while ((result = regex.exec(str))) {
-		parts.push(str.substring(prevIdx, result.index));
-		prevIdx = result.index;
-	}
-
-	parts.push(str.substring(prevIdx));
-	return parts.filter(Boolean);
-}
-
-/**
  * Keeps the WordBank.categories and each of the arrays in WordBank.words, but empties the arrays.
  * @returns A new object with empty arrays in WordBank.words.
  */

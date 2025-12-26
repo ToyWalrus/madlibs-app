@@ -15,7 +15,7 @@ import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import { CustomMarkdown } from '@/components/CustomMarkdown';
 import { PageLayout } from '@/components/PageLayout';
-import { saveTemplate } from '@/database';
+import { saveTemplate, shareCategories, shareIdExists } from '@/database';
 import type { Template } from '@/types';
 import { generateShareId } from '@/utils/helperFunctions';
 
@@ -38,8 +38,13 @@ export function TemplateCreation({ existingTemplate }: TemplateCreationProps) {
 				<Button
 					variant="accent"
 					isDisabled={!title || !text}
-					onPress={() => {
-						saveTemplate({ text, title, shareId });
+					onPress={async () => {
+						const template = { text, title, shareId };
+						saveTemplate(template);
+						if (await shareIdExists(shareId)) {
+							await shareCategories(template);
+						}
+
 						UNSTABLE_ToastQueue.positive('Saved', { timeout: 3000 });
 						navigate('/');
 					}}

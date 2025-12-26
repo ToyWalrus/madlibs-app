@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
 	ActionButton,
@@ -23,7 +24,7 @@ import { style } from '@react-spectrum/s2/style' with { type: 'macro' };
 
 import { PageLayout } from '@/components/PageLayout';
 import { ShareCodeEntryDialog } from '@/components/ShareCodeDialog';
-import { fetchWordbank, updateWordbank } from '@/database';
+import { fetchWordbank, shareIdExists, updateWordbank } from '@/database';
 import type { WordBank as WordBankType } from '@/types';
 import { EMPTY_WORD_BANK, flex1 } from '@/utils/constants';
 import { capitalize, dedupWordBank, exceptSets, stripWordBankWords } from '@/utils/helperFunctions';
@@ -38,6 +39,7 @@ export function WordBank({ shareId }: WordBankProps) {
 	const [localWordBank, setLocalWordBank] = useState(EMPTY_WORD_BANK);
 	const [showExistingWords, setShowExistingWords] = useState(false);
 	const dbWordBank = useRef(EMPTY_WORD_BANK);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (!shareId) return;
@@ -105,7 +107,10 @@ export function WordBank({ shareId }: WordBankProps) {
 							buttonText="Enter a new share code"
 							buttonSize="L"
 							onSubmit={async code => {
-								console.log('submit code', code);
+								if (await shareIdExists(code)) {
+									navigate(`/wordbank/${code}`);
+									return true;
+								}
 								return false;
 							}}
 						/>
@@ -195,6 +200,15 @@ interface CategorySectionProps {
 function CategorySection({ words, existingWords = [], category, onAddWord, onRemoveWord }: CategorySectionProps) {
 	const [newWord, setNewWord] = useState('');
 	const createWordItems = useCallback((words: string[]) => words.map(w => ({ label: w, id: w })), []);
+	const onSubmit = useCallback(() => {
+		if (!newWord) return;
+		onAddWord(newWord.trim());
+		setNewWord('');
+
+		inputRef.current?.focus();
+	}, [newWord, onAddWord]);
+
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	return (
 		<Card styles={style({ width: 'auto' })}>
@@ -204,16 +218,27 @@ function CategorySection({ words, existingWords = [], category, onAddWord, onRem
 					{capitalize(category)}
 				</Text>
 				<div className={style({ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'end' })}>
-					<TextField placeholder={`New ${category}`} value={newWord} onChange={setNewWord} />{' '}
-					{/* TODO: enter submits the word */}
+					<TextField
+						placeholder={`New ${category}`}
+						onChange={setNewWord}
+						onKeyDown={e => {
+							if (e.key === 'Enter') {
+								onSubmit();
+							}
+						}}
+						value={newWord}
+						ref={e => {
+							const inputEl = e?.UNSAFE_getDOMNode()?.querySelector('input');
+							if (inputEl) {
+								inputEl.setAttribute('autocapitalize', 'off');
+								inputRef.current = inputEl;
+							} else {
+								inputRef.current = null;
+							}
+						}}
+					/>
 					<TooltipTrigger delay={700}>
-						<ActionButton
-							onPress={() => {
-								if (!newWord) return;
-								onAddWord(newWord);
-								setNewWord('');
-							}}
-						>
+						<ActionButton onPress={onSubmit}>
 							<AddIcon />
 						</ActionButton>
 						<Tooltip>Add word</Tooltip>
@@ -223,7 +248,13 @@ function CategorySection({ words, existingWords = [], category, onAddWord, onRem
 					size="S"
 					items={createWordItems(words)}
 					onRemove={keys => onRemoveWord([...keys][0] as string)}
-					renderEmptyState={() => <span className={style({ marginStart: 2 })}>No words added yet...</span>}
+					renderEmptyState={() =>
+						existingWords.length ? (
+							<></>
+						) : (
+							<span className={style({ marginStart: 2 })}>No words added yet...</span>
+						)
+					}
 				>
 					{item => <Tag>{item.label}</Tag>}
 				</TagGroup>
