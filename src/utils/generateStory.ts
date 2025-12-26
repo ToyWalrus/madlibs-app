@@ -1,7 +1,7 @@
 import type { TextColorOption, WordBank } from '@/types';
 import { categoryRegex } from '@/utils/constants';
 
-import { pickRandom } from './helperFunctions';
+import { pickRandom, transformWordCategory } from './helperFunctions';
 
 interface ReplacementObject {
 	category: string;
@@ -41,6 +41,7 @@ export function generateStory(text: string, wordbank: WordBank) {
 
 		story =
 			story.substring(0, range[0]) +
+			// TODO: make word color dynamic
 			getWordWithPrependedColor(wordToReplaceWith, 'celery') +
 			story.substring(range[1]);
 	}
@@ -54,7 +55,7 @@ function getReplacementRanges(text: string, wordbank: WordBank) {
 	const wordbankCategories = new Set(wordbank.categories);
 
 	for (const match of results) {
-		const category = match[1].toLowerCase();
+		const category = transformWordCategory(match[1]);
 		const id: string | undefined = match[2];
 		const categoryKey = category + id;
 

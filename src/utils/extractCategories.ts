@@ -1,6 +1,7 @@
 import type { TextColorOption } from '@/types';
 
 import { categoryRegex } from './constants';
+import { transformWordCategory } from './helperFunctions';
 
 interface CategoryWithCount {
 	hasCategoryWithoutId: boolean;
@@ -18,17 +19,17 @@ export function extractCategories(text: string) {
 
 	const matches = text.matchAll(categoryRegex);
 	for (const match of matches) {
-		const text = match[1].toLowerCase();
+		const category = transformWordCategory(match[1]);
 		const id = match[2] ?? '';
-		const categoryWithId = text + id;
+		const categoryWithId = category + id;
 
 		if (!wordCount[categoryWithId]) {
-			wordCount[categoryWithId] = { hasCategoryWithoutId: false, category: text, count: 0 };
+			wordCount[categoryWithId] = { hasCategoryWithoutId: false, category, count: 0 };
 		}
 
-		categories.add(text);
+		categories.add(category);
 		wordCount[categoryWithId].count += 1;
-		wordCount[categoryWithId].hasCategoryWithoutId = !!wordCount[text];
+		wordCount[categoryWithId].hasCategoryWithoutId = !!wordCount[category];
 	}
 
 	// Get the adjusted count of categories needed to fully generate the story, factoring in the numbered categories

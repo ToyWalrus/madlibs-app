@@ -20,6 +20,10 @@ export function generateShareId() {
 	return generateId(5);
 }
 
+export function transformWordCategory(category: string) {
+	return category.toLowerCase();
+}
+
 /**
  * Selects a random item from the array and returns it. If there are no
  * valid selections in the array after the ignore array has been used as a filter,
