@@ -98,7 +98,7 @@ export function WordBank({ shareId }: WordBankProps) {
 
 	if (!shareId) {
 		return (
-			<PageLayout showBackButton isEmptyPage>
+			<PageLayout title="Invalid code" showBackButton isEmptyPage>
 				<IllustratedMessage>
 					<WarningIllustration />
 					<Content>No word bank loaded</Content>
@@ -106,13 +106,8 @@ export function WordBank({ shareId }: WordBankProps) {
 						<ShareCodeEntryDialog
 							buttonText="Enter a new share code"
 							buttonSize="L"
-							onSubmit={async code => {
-								if (await shareIdExists(code)) {
-									navigate(`/wordbank/${code}`);
-									return true;
-								}
-								return false;
-							}}
+							onSubmit={id => shareIdExists(id)}
+							onRouteToPage={id => navigate(`/wordbank/${id}`)}
 						/>
 					</ButtonGroup>
 				</IllustratedMessage>
