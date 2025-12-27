@@ -9,6 +9,9 @@ export interface WordBank<const T extends readonly string[] = string[]> {
 	words: {
 		[K in T[number]]: string[];
 	};
+	totalWordsNeeded?: {
+		[K in T[number]]: number;
+	};
 }
 
 export type TextColorOption =

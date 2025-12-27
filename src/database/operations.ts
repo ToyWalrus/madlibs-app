@@ -9,7 +9,7 @@ import { db } from './firebase';
 const TEMPLATES_KEY = 'templates';
 const WORDBANK_COLLECTION = 'wordbank';
 
-async function timeout<T>(promise: Promise<T>, timeoutVal = 30000): Promise<T> {
+async function timeout<T>(promise: Promise<T>, timeoutVal = 15000): Promise<T> {
 	return Promise.race([
 		promise,
 		new Promise<T>((_, reject) => {
@@ -31,13 +31,19 @@ export async function ensureWordbankExists(template: Template) {
 }
 
 export async function shareCategories(template: Template) {
-	const categories = extractCategories(template.text).categories;
+	const { categories, totalWordsNeeded } = extractCategories(template.text);
 	const existing = await fetchWordbank(template.shareId).catch(() => EMPTY_WORD_BANK);
 	const categoryWords: Record<string, string[]> = categories.reduce(
 		(acc, cur) => ({ [cur]: existing.words[cur] ?? [], ...acc }),
 		{},
 	);
-	await timeout(setDoc(doc(db, WORDBANK_COLLECTION, template.shareId), { categories, words: categoryWords }));
+	await timeout(
+		setDoc(doc(db, WORDBANK_COLLECTION, template.shareId), {
+			categories,
+			words: categoryWords,
+			totalWordsNeeded,
+		} satisfies WordBank),
+	);
 }
 
 export async function getCategoriesFromShareId(id: string): Promise<string[]> {

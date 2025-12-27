@@ -119,7 +119,6 @@ export function TemplateList() {
 					flexDirection: 'column',
 					gap: 12,
 					width: {
-						// auto?
 						default: 'full',
 						md: 500,
 						lg: 600,
@@ -196,7 +195,11 @@ function TemplateItem({ template, onGenerate, onDelete, onEdit, onShare }: Templ
 			</Content>
 			<Footer>
 				<TagGroup label="Categories" selectionMode="none" maxRows={2} size="S" items={categories}>
-					{category => <Tag>{category.label}</Tag>}
+					{category => (
+						<Tag>
+							{category.label} ({totalWordsNeeded[category.id]})
+						</Tag>
+					)}
 				</TagGroup>
 				<ButtonGroup>
 					<ShareButton
